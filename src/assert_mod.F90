@@ -1380,13 +1380,13 @@ contains
 
   end subroutine assert_failure
 
-  real(4) function get_relative_difference_real4(x, y, case)
+  real(4) function get_relative_difference_real4(x, y, mode)
 
     real(4), intent(in) :: x
     real(4), intent(in) :: y
-    integer, optional, intent(in) :: case
+    integer, optional, intent(in) :: mode
 
-    select case (merge(case, 1, present(case)))
+    select case (merge(mode, 1, present(mode)))
 
     case (1)
       get_relative_difference_real4 = abs(max(abs(x), abs(y)))
@@ -1410,13 +1410,20 @@ contains
 
   end function get_relative_difference_real4
 
-  real(8) function get_relative_difference_real8(x, y, case)
+  real(8) function get_relative_difference_real8(x, y, mode)
 
     real(8), intent(in) :: x
     real(8), intent(in) :: y
-    integer, optional, intent(in) :: case
+    integer, optional, intent(in) :: mode
+    integer :: mode_
 
-    select case (merge(case, 1, present(case)))
+    if(present(mode)) then
+      mode_ = mode
+    else
+      mode_ = 1
+    end if
+
+    select case (mode_)
 
     case (1)
       get_relative_difference_real8 = abs(max(abs(x), abs(y)))
