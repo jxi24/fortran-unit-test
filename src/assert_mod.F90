@@ -1385,8 +1385,15 @@ contains
     real(4), intent(in) :: x
     real(4), intent(in) :: y
     integer, optional, intent(in) :: mode
+    integer :: mode_
 
-    select case (merge(mode, 1, present(mode)))
+    if(present(mode)) then
+      mode_ = mode
+    else
+      mode_ = 1
+    end if
+
+    select case (mode_)
 
     case (1)
       get_relative_difference_real4 = abs(max(abs(x), abs(y)))
