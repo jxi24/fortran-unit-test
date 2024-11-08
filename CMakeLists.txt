@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_MACOSX_RPATH ON)
 
@@ -46,7 +46,7 @@ install(TARGETS fortran_unit_test EXPORT FortranUnitTestTargets
   LIBRARY DESTINATION lib
 )
 
-install(DIRECTORY "${CMAKE_BINARY_DIR}/fortran_unit_test" DESTINATION include)
+# install(DIRECTORY "${CMAKE_BINARY_DIR}/fortran_unit_test" DESTINATION include)
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file (
