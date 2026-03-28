@@ -110,6 +110,36 @@ int fut_suite_num_assertions(int handle);
 int fut_suite_num_passed(int handle);
 
 /* -------------------------------------------------------------------------
+ * Test registry — auto-discovery of Fortran test suites from C++
+ *
+ * Usage:
+ *   1. In Fortran, call fut_register_test("Suite Name", my_subroutine)
+ *      for every test suite you want Catch2 to discover.
+ *   2. In C++, call your registration function once, then use
+ *      FUT_AUTO_DISCOVER_TESTS() (defined in fut_catch2.hpp) to run all
+ *      registered suites as independent Catch2 test instances.
+ * ---------------------------------------------------------------------- */
+
+/** Return the number of registered Fortran test suites. */
+int fut_num_registered_tests(void);
+
+/**
+ * Copy the name of the idx-th registered suite (0-based) into buf.
+ * buf must be at least 129 bytes.  *buf_len receives the length written
+ * (not counting the NUL terminator that is always appended).
+ */
+void fut_get_registered_test_name(int idx, char *buf, int *buf_len);
+
+/**
+ * Run the idx-th registered suite (0-based) into the FUT suite handle.
+ * The handle must have been obtained from fut_suite_create().
+ */
+void fut_run_registered_test(int idx, int handle);
+
+/** Clear all registrations (useful for isolated test runs). */
+void fut_clear_registered_tests(void);
+
+/* -------------------------------------------------------------------------
  * Convenience macros
  * ---------------------------------------------------------------------- */
 

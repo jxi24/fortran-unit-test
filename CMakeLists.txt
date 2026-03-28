@@ -26,6 +26,7 @@ set(sources
   src/test_common_mod.F90
   src/test_case_mod.F90
   src/test_suite_mod.F90
+  src/fut_test_registry_mod.F90
   src/unit_test.F90
   src/fut_c_api.F90
 )

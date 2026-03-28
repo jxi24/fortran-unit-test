@@ -31,9 +31,12 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_message.hpp>
+#include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include "fut_c_api.h"
 
+#include <cstddef>
 #include <string>
 #include <stdexcept>
 
@@ -182,5 +185,49 @@ private:
         CHECK((guard).numAssertions() > 0);                                   \
         FUT_CHECK_SUITE(guard);                                               \
     } while (0)
+
+// ---------------------------------------------------------------------------
+// FUT_AUTO_DISCOVER_TESTS(init_fn)
+// ---------------------------------------------------------------------------
+/**
+ * Generate one Catch2 test instance per Fortran suite registered via
+ * fut_register_test().  Drop this single macro into your test driver; the
+ * file never needs to change when tests are added.
+ *
+ * init_fn  — a void(void) C-callable function that calls fut_register_test()
+ *            for every suite in your Fortran module.  It is called once; the
+ *            macro guards against repeated invocations.
+ *
+ * Minimal driver (entire file):
+ *
+ *   #include "fut_catch2.hpp"
+ *   extern "C" { void register_my_tests(void); }
+ *   FUT_AUTO_DISCOVER_TESTS(register_my_tests)
+ *
+ * Each registered Fortran suite becomes a separate DYNAMIC_SECTION inside one
+ * Catch2 TEST_CASE, giving individual pass/fail reporting per suite without
+ * any per-suite C++ boilerplate.
+ */
+#define FUT_AUTO_DISCOVER_TESTS(init_fn)                                      \
+    TEST_CASE("Fortran", "[fortran]") {                                       \
+        static bool _fut_init_done_ = false;                                  \
+        if (!_fut_init_done_) {                                               \
+            (init_fn)();                                                      \
+            _fut_init_done_ = true;                                           \
+        }                                                                     \
+        const int _fut_n_   = fut_num_registered_tests();                     \
+        const int _fut_idx_ =                                                 \
+            GENERATE_COPY(::Catch::Generators::range(0, _fut_n_));            \
+        char        _fut_buf_[129] = {};                                      \
+        int         _fut_len_      = 0;                                       \
+        fut_get_registered_test_name(_fut_idx_, _fut_buf_, &_fut_len_);       \
+        const std::string _fut_name_(                                         \
+            _fut_buf_, static_cast<std::size_t>(_fut_len_));                  \
+        DYNAMIC_SECTION(_fut_name_) {                                         \
+            FutSuiteGuard _fut_suite_(_fut_name_);                            \
+            fut_run_registered_test(_fut_idx_, _fut_suite_.handle());         \
+            FUT_CHECK_ALL_PASSED(_fut_suite_);                                \
+        }                                                                     \
+    }
 
 #endif /* FUT_CATCH2_HPP */

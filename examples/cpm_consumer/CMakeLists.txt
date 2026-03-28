@@ -50,8 +50,8 @@ enable_testing()
 include(CTest)
 
 add_executable(physics_tests
-  tests/test_suite.cpp        # Catch2 driver — creates suites, calls Fortran, checks counts
-  tests/physics_tests.F90     # Fortran test suites — all assertions written in native Fortran
+  tests/test_suite.cpp     # 3-line Catch2 driver: include + extern "C" + FUT_AUTO_DISCOVER_TESTS
+  tests/physics_tests.F90  # Fortran test suites using native FUT assertions + fut_register_test
 )
 
 # Require C++14 (minimum for Catch2 v3)
