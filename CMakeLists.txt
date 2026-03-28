@@ -77,7 +77,9 @@ if (NOT has_parent)
   if (Catch2_FOUND)
     message(STATUS "Catch2 v3 found — building C++/Fortran cross-language tests")
 
-    add_executable(fut_catch2_test tests/test_fortran_suite.cpp)
+    add_executable(fut_catch2_test
+        tests/test_fortran_suite.cpp
+        tests/fortran_native_tests.F90)
 
     target_include_directories(fut_catch2_test PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include)

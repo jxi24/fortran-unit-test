@@ -15,6 +15,11 @@ module fut_c_api_mod
   implicit none
   private
 
+  ! Public non-bind(C) accessor — lets Fortran test subroutines use the native
+  ! FUT API (assert_equal, test_case_create, …) on a suite that was created via
+  ! the C handle system.  See CLAUDE.md for the usage pattern.
+  public :: fut_get_suite_ptr
+
   ! Maximum number of concurrently live suites accessible via C handles.
   integer, parameter :: FUT_MAX_SUITES = 32
 
@@ -263,5 +268,35 @@ contains
     n = int(count(results), c_int)
 
   end function fut_suite_num_passed
+
+  ! ---------------------------------------------------------------------------
+  ! fut_get_suite_ptr  (Fortran-only; not bind(C))
+  !
+  ! Returns a Fortran pointer to the test_suite_type stored at handle so that
+  ! Fortran test subroutines can call the full native FUT API on a suite that
+  ! was originally created via the C handle system.
+  !
+  ! Typical use in a Fortran test subroutine:
+  !
+  !   subroutine my_fortran_tests(handle) bind(C, name="my_fortran_tests")
+  !     use iso_c_binding
+  !     use unit_test
+  !     use fut_c_api_mod, only: fut_get_suite_ptr
+  !     integer(c_int), value :: handle
+  !     type(test_suite_type), pointer :: suite
+  !
+  !     suite => fut_get_suite_ptr(int(handle))
+  !     call test_case_create('my case', suite)
+  !     call assert_equal(42, 42, __FILE__, __LINE__, suite=suite)
+  !   end subroutine
+  ! ---------------------------------------------------------------------------
+  function fut_get_suite_ptr(handle) result(ptr)
+
+    integer, intent(in) :: handle
+    type(test_suite_type), pointer :: ptr
+
+    ptr => suite_registry(handle)
+
+  end function fut_get_suite_ptr
 
 end module fut_c_api_mod

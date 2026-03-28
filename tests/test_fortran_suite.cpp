@@ -155,3 +155,48 @@ TEST_CASE("Full cross-language workflow", "[fortran][integration]") {
     // Optionally print the full Fortran-style report for debugging.
     // suite.report();
 }
+
+// ---------------------------------------------------------------------------
+// TEST_CASE 5 — Fortran-native tests called by Catch2
+//
+// These subroutines are written entirely in Fortran using the native FUT API
+// (use unit_test; call assert_equal / assert_approximate / …).  They accept
+// an integer handle, obtain a Fortran pointer to the suite via
+// fut_get_suite_ptr, and write tests as normal Fortran code.
+//
+// The C++ side just calls the subroutine and checks the aggregate results.
+// ---------------------------------------------------------------------------
+extern "C" {
+    void fortran_assert_equal_tests(int handle);
+    void fortran_assert_approximate_tests(int handle);
+    void fortran_all_pass_tests(int handle);
+}
+
+TEST_CASE("Fortran-native tests driven by Catch2", "[fortran][native]") {
+
+    SECTION("assert_equal written in Fortran — odd fail / even pass") {
+        FutSuiteGuard suite("Native Fortran: assert_equal");
+        fortran_assert_equal_tests(suite.handle());
+
+        // 2 test cases × (1 fail + 1 pass) = 4 total, 2 passed
+        CHECK(suite.numAssertions() == 4);
+        CHECK(suite.numPassed()     == 2);
+        CHECK(suite.numFailed()     == 2);
+    }
+
+    SECTION("assert_approximate written in Fortran — odd fail / even pass") {
+        FutSuiteGuard suite("Native Fortran: assert_approximate");
+        fortran_assert_approximate_tests(suite.handle());
+
+        // 1 test case × (1 fail + 1 pass + 1 fail + 1 pass) = 4 total, 2 passed
+        CHECK(suite.numAssertions() == 4);
+        CHECK(suite.numPassed()     == 2);
+        CHECK(suite.numFailed()     == 2);
+    }
+
+    SECTION("all-pass Fortran suite passes FUT_CHECK_ALL_PASSED") {
+        FutSuiteGuard suite("Native Fortran: all pass");
+        fortran_all_pass_tests(suite.handle());
+        FUT_CHECK_ALL_PASSED(suite);
+    }
+}
