@@ -110,6 +110,11 @@ if (NOT has_parent)
 endif ()
 
 # ---------------------------------------------------------------------------
+# CMake helper functions (fut_catch2_discover, etc.)
+# ---------------------------------------------------------------------------
+include(cmake/FutHelpers.cmake)
+
+# ---------------------------------------------------------------------------
 # Install
 # ---------------------------------------------------------------------------
 install(TARGETS fortran_unit_test EXPORT FortranUnitTestTargets
@@ -145,6 +150,7 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/FortranUnitTest/FortranUnitTestConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/FortranUnitTest/FortranUnitTestConfigVersion.cmake"
+    cmake/FutHelpers.cmake
   DESTINATION
     ${ConfigPackageLocation}
 )

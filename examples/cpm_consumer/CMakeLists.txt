@@ -49,28 +49,26 @@ add_library(physics STATIC src/simple_physics.F90)
 enable_testing()
 include(CTest)
 
-add_executable(physics_tests
-  tests/test_suite.cpp     # 3-line Catch2 driver: include + extern "C" + FUT_AUTO_DISCOVER_TESTS
-  tests/physics_tests.F90  # Fortran test suites using native FUT assertions + fut_register_test
-)
+# Test executable — only Fortran source files; no C++ required.
+add_executable(physics_tests tests/physics_tests.F90)
 
-# Require C++14 (minimum for Catch2 v3)
 target_compile_features(physics_tests PRIVATE cxx_std_14)
 
-# Allow long Fortran lines in physics_tests.F90 (assert calls with file/line
-# macros can exceed the default 132-character limit on GNU Fortran).
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     target_compile_options(physics_tests PRIVATE
         $<$<COMPILE_LANGUAGE:Fortran>:-ffree-line-length-none>)
 endif()
 
-# fortran_unit_test propagates include/ (fut_c_api.h, fut_catch2.hpp) via its
-# PUBLIC target_include_directories, so no explicit include_directories needed.
 target_link_libraries(physics_tests PRIVATE
-  physics               # Fortran library under test
-  fortran_unit_test     # FUT assertion engine + C/C++ headers
+  physics
+  fortran_unit_test
   Catch2::Catch2WithMain
 )
+
+# Generate the C++ Catch2 driver automatically — no test_suite.cpp needed.
+# register_physics_tests is the bind(C) Fortran subroutine that calls
+# fut_register_test() for each suite in physics_tests.F90.
+fut_catch2_discover(physics_tests register_physics_tests)
 
 # ---------------------------------------------------------------------------
 # CTest registration — choose ONE of the two options below.
